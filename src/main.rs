@@ -6,8 +6,6 @@ mod crypto;
 use crypto::{read_encrypted_file, write_encrypted_file};
 
 #[derive(Parser)]
-#[command(name = "secret-mnemonic")]
-#[command(about = "Generate and save secret mnemonics", long_about = None)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -86,12 +84,18 @@ fn main() {
                 }
             };
 
-            write_encrypted_file(&args.filename, &phrase, &password, *overwrite);
-
-            println!(
-                "Mnemonic generated and saved successfully to {}.",
-                args.filename.display()
-            );
+            match write_encrypted_file(&args.filename, &phrase, &password, *overwrite) {
+                Ok(_) => {
+                    println!(
+                        "Mnemonic generated and saved successfully to {}.",
+                        args.filename.display()
+                    );
+                }
+                Err(e) => {
+                    eprintln!("Failed to write encrypted file: {}", e);
+                    return;
+                }
+            }
         }
         Commands::Inspect { args } => {
             let password = match &cli.password {

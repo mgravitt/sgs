@@ -4,6 +4,7 @@ use ring::{
     pbkdf2, rand,
 };
 use std::fs::File;
+use std::io;
 use std::io::{Read, Write};
 use std::path::Path;
 
@@ -42,21 +43,29 @@ pub fn read_encrypted_file<P: AsRef<Path>>(filename: P, password: &str) -> Vec<u
 /// * `phrase` - The phrase to encrypt.
 /// * `password` - The password used for encryption.
 /// * `overwrite` - Whether to overwrite the file if it already exists.
-pub fn write_encrypted_file<P: AsRef<Path>>(filename: P, phrase: &str, password: &str, overwrite: bool) {
+pub fn write_encrypted_file<P: AsRef<Path>>(
+    filename: P,
+    phrase: &str,
+    password: &str,
+    overwrite: bool,
+) -> Result<(), io::Error> {
     let path = filename.as_ref();
     if path.exists() && !overwrite {
-        eprintln!("File already exists and overwrite is set to false. Aborting.");
-        return;
+        return Err(io::Error::new(
+            io::ErrorKind::AlreadyExists,
+            "File already exists and overwrite is set to false",
+        ));
     }
 
     let phrase_bytes = phrase.as_bytes().to_vec();
     let (encrypted_data, salt, nonce) = encrypt(phrase_bytes, password);
 
-    let mut file = File::create(path).expect("Failed to create file");
-    file.write_all(&salt).expect("Failed to write salt to file");
-    file.write_all(&nonce).expect("Failed to write nonce to file");
-    file.write_all(&encrypted_data)
-        .expect("Failed to write encrypted data to file");
+    let mut file = File::create(path)?;
+    file.write_all(&salt)?;
+    file.write_all(&nonce)?;
+    file.write_all(&encrypted_data)?;
+
+    Ok(())
 }
 
 /// Encrypts the given data using the provided password.
@@ -173,10 +182,37 @@ mod tests {
         let temp_file = NamedTempFile::new().expect("Failed to create temporary file");
         let file_path = temp_file.path();
 
-        write_encrypted_file(file_path, phrase, password, true);
+        write_encrypted_file(file_path, phrase, password, true)
+            .expect("Failed to write encrypted file");
         let decrypted_phrase = read_encrypted_file(file_path, password);
 
         assert_eq!(phrase.as_bytes(), decrypted_phrase.as_slice());
+
+        fs::remove_file(file_path).expect("Failed to remove temporary file");
+    }
+
+    #[test]
+    fn test_no_overwrite_existing_file() {
+        let initial_phrase = "Initial phrase.";
+        let new_phrase = "New secret phrase.";
+        let password = "password123";
+
+        let temp_file = NamedTempFile::new().expect("Failed to create temporary file");
+        let file_path = temp_file.path();
+
+        // Write the initial phrase to the file
+        write_encrypted_file(file_path, initial_phrase, password, true)
+            .expect("Failed to write initial encrypted file");
+
+        // Attempt to write a new phrase without overwriting
+        let result = write_encrypted_file(file_path, new_phrase, password, false);
+
+        // Ensure the function returned an error
+        assert!(result.is_err(), "File should not be overwritten");
+
+        // Ensure the content has not changed
+        let decrypted_phrase = read_encrypted_file(file_path, password);
+        assert_eq!(initial_phrase.as_bytes(), decrypted_phrase.as_slice());
 
         fs::remove_file(file_path).expect("Failed to remove temporary file");
     }
