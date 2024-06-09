@@ -1,2 +1,5 @@
 /target
 *.enc
+
+.DS_Store
+

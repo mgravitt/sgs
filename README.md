@@ -34,6 +34,25 @@ Inspect a secret mnemonic file.
 ```
 You will be prompted to enter the password used to encrypt the mnemonic and the mnenonic will be printed to the console. 
 
+### Optional Arguments
+#### Password
+The password is used to encrypt the mnemonic. It can be passed as an environment variable or as a command line argument.
+```
+PASSWORD=my_password ./target/release/mgs generate --filename my_mnemonic
+```
+or
+```
+./target/release/mgs generate --password my_password --filename my_mnemonic
+```
+#### Word Count
+The number of words in the mnemonic phrase. The default is 12. 
+```
+./target/release/mgs generate --word-count 24 --filename my_mnemonic
+```
+
+#### Filename
+The filename is the name of the file that the mnemonic will be saved to. The default filename is `mnemonic.txt`.
+
 ## Security
 
 The Secret Mnemonic CLI uses secure encryption techniques to protect the mnemonic:
