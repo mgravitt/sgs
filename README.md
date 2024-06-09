@@ -1,36 +1,31 @@
 # Mnemonic-Generate-Save (mgs) CLI
 
-A command-line interface (CLI) application for generating and saving secret mnemonics.
+A command-line interface for generating and saving secret mnemonics.
 
 ## Installation
 
-To install the Secret Mnemonic CLI, follow these steps:
+To install the CLI, follow these steps:
 
-1. Clone the repository:
+Clone the repository:
 ```
 git clone https://github.com/mgravitt/mgs
-```
-
-2. Navigate to the project directory and build the CLI:
-```
 cd mgs
 cargo build --release
 ```
-
-3. The compiled binary will be available at `target/release/mgs`.
+The compiled binary will be available at `target/release/mgs`.
 
 ## Usage
 ### Generate
 Generate a new secret mnemonic and save it to a file.
 ```
-./target/release/mgs generate --filename my_mnemonic
+./target/release/mgs generate --filename mnemonic.enc
 ```
 You will be prompted twice to enter an encryption password and the file will be saved. 
 
 ### Inspect
 Inspect a secret mnemonic file.
 ```
-./target/release/mgs inspect --filename my_mnemonic
+./target/release/mgs inspect --filename mnemonic.enc
 ```
 You will be prompted to enter the password used to encrypt the mnemonic and the mnenonic will be printed to the console. 
 
@@ -38,30 +33,36 @@ You will be prompted to enter the password used to encrypt the mnemonic and the 
 #### Password
 The password is used to encrypt the mnemonic. It can be passed as an environment variable or as a command line argument.
 ```
-PASSWORD=my_password ./target/release/mgs generate --filename my_mnemonic
+PASSWORD=my_password ./target/release/mgs generate --filename mnemonic.enc
 ```
 or
 ```
-./target/release/mgs generate --password my_password --filename my_mnemonic
+./target/release/mgs generate --password my_password --filename mnemonic.enc
 ```
 #### Word Count
 The number of words in the mnemonic phrase. The default is 12. 
 ```
-./target/release/mgs generate --word-count 24 --filename my_mnemonic
+./target/release/mgs generate --word-count 24 --filename mnemonic.enc
 ```
 
 #### Filename
-The filename is the name of the file that the mnemonic will be saved to. The default filename is `mnemonic.txt`.
+The filename is the name of the file that the mnemonic will be saved to.
 
 ## Security
 
-The Secret Mnemonic CLI uses secure encryption techniques to protect the mnemonic:
+The CLI uses secure encryption techniques to protect the mnemonic:
 
 - The mnemonic is encrypted using AES-256-GCM with a randomly generated nonce.
-- The encryption key is derived from the user-provided password using PBKDF2 with HMAC-SHA256 and 100,000 iterations.
+- The encryption key is derived from the user-provided password using PBKDF2 with HMAC-SHA256 and 262_144 iterations.
 - A random 16-byte salt is generated for each encryption operation to protect against rainbow table attacks.
 
-It is crucial to use a strong and unique password to ensure the security of the encrypted mnemonic.
+## Example Walkthrough
+```sh
+> PASSWORD=1234 ./target/release/mgs generate --filename m1.enc
+Mnemonic generated and saved successfully to m1.enc.
+> PASSWORD=1234 ./target/release/mgs inspect --filename m1.enc
+Decrypted mnemonic: trial soda broccoli wear plunge angle afford armed able good symptom mountain
+```
 
 ## Dependencies
 
