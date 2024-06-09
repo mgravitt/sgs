@@ -1,4 +1,4 @@
-# Mnemonic-Generate-Save (mgs) CLI
+# Mnemonic-Generate-Save (sgs) CLI
 
 A command-line interface for generating and saving secret mnemonics.
 
@@ -8,24 +8,24 @@ To install the CLI, follow these steps:
 
 Clone the repository:
 ```
-git clone https://github.com/mgravitt/mgs
-cd mgs
+git clone https://github.com/mgravitt/sgs
+cd sgs
 cargo build --release
 ```
-The compiled binary will be available at `target/release/mgs`.
+The compiled binary will be available at `target/release/sgs`.
 
 ## Usage
 ### Generate
 Generate a new secret mnemonic and save it to a file.
 ```
-./target/release/mgs generate --filename mnemonic.enc
+./target/release/sgs generate --filename mnemonic.enc
 ```
 You will be prompted twice to enter an encryption password and the file will be saved. 
 
 ### Inspect
 Inspect a secret mnemonic file.
 ```
-./target/release/mgs inspect --filename mnemonic.enc
+./target/release/sgs inspect --filename mnemonic.enc
 ```
 You will be prompted to enter the password used to encrypt the mnemonic and the mnenonic will be printed to the console. 
 
@@ -33,16 +33,16 @@ You will be prompted to enter the password used to encrypt the mnemonic and the 
 #### Password
 The password is used to encrypt the mnemonic. It can be passed as an environment variable or as a command line argument.
 ```
-PASSWORD=my_password ./target/release/mgs generate --filename mnemonic.enc
+PASSWORD=my_password ./target/release/sgs generate --filename mnemonic.enc
 ```
 or
 ```
-./target/release/mgs generate --password my_password --filename mnemonic.enc
+./target/release/sgs generate --password my_password --filename mnemonic.enc
 ```
 #### Word Count
 The number of words in the mnemonic phrase. The default is 12. 
 ```
-./target/release/mgs generate --word-count 24 --filename mnemonic.enc
+./target/release/sgs generate --word-count 24 --filename mnemonic.enc
 ```
 
 #### Filename
@@ -58,10 +58,15 @@ The CLI uses secure encryption techniques to protect the mnemonic:
 
 ## Example Walkthrough
 ```sh
-> PASSWORD=1234 ./target/release/mgs generate --filename m1.enc
+> PASSWORD=1234 ./target/release/sgs generate --filename m1.enc
 Mnemonic generated and saved successfully to m1.enc.
-> PASSWORD=1234 ./target/release/mgs inspect --filename m1.enc
-Decrypted mnemonic: trial soda broccoli wear plunge angle afford armed able good symptom mountain
+> PASSWORD=1234 ./target/release/sgs inspect --filename m1.enc
+Decrypted secret: trial soda broccoli wear plunge angle afford armed able good symptom mountain
+
+> PASSWORD=1234 ./target/release/sgs generate --filename pk1.enc --key-type private-key --overwrite
+Key generated and saved successfully to pk1.enc.
+> PASSWORD=1234 ./target/release/sgs inspect --filename pk1.enc
+Decrypted secret: 15cd890528ff2ff94204f5fb4a8437ac4535603b6894c88af908565d863250dd
 ```
 
 ## Dependencies

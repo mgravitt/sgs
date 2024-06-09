@@ -1,5 +1,6 @@
 use bip39::{Language, Mnemonic, MnemonicType};
 use clap::{Parser, Subcommand, ValueEnum};
+use secp256k1::{rand::rngs::OsRng, SecretKey};
 use std::path::PathBuf;
 
 mod crypto;
@@ -26,8 +27,12 @@ enum Commands {
         #[arg(short, long, default_value = "12")]
         word_count: WordCount,
 
+        /// Type of key to generate: "mnemonic" or "private-key"
+        #[arg(short, long, env = "KEY_TYPE", default_value = "mnemonic")]
+        key_type: KeyType,
+
         /// Overwrite the file if it already exists
-        #[arg(short, long, default_value_t = false)]
+        #[arg(short, long, env = "OVERWRITE", default_value_t = false)]
         overwrite: bool,
     },
     /// Inspect a secret mnemonic from a file
@@ -52,6 +57,14 @@ enum WordCount {
     TwentyFour = 24,
 }
 
+#[derive(ValueEnum, Clone, Debug)]
+enum KeyType {
+    #[value(name = "mnemonic")]
+    Mnemonic,
+    #[value(name = "private-key")]
+    PrivateKey,
+}
+
 fn main() {
     let cli = Cli::parse();
 
@@ -59,15 +72,24 @@ fn main() {
         Commands::Generate {
             args,
             word_count,
+            key_type,
             overwrite,
         } => {
-            let mnemonic_type = match word_count {
-                WordCount::Twelve => MnemonicType::Words12,
-                WordCount::TwentyFour => MnemonicType::Words24,
+            let phrase = match key_type {
+                KeyType::Mnemonic => {
+                    let mnemonic_type = match word_count {
+                        WordCount::Twelve => MnemonicType::Words12,
+                        WordCount::TwentyFour => MnemonicType::Words24,
+                    };
+                    let mnemonic = Mnemonic::new(mnemonic_type, Language::English);
+                    mnemonic.to_string()
+                }
+                KeyType::PrivateKey => {
+                    let secret_key = SecretKey::new(&mut OsRng);
+                    let secret_key_hex = format!("{}", secret_key.display_secret());
+                    secret_key_hex
+                }
             };
-
-            let mnemonic = Mnemonic::new(mnemonic_type, Language::English);
-            let phrase = mnemonic.to_string();
 
             let password = match &cli.password {
                 Some(p) => p.clone(),
@@ -87,7 +109,7 @@ fn main() {
             match write_encrypted_file(&args.filename, &phrase, &password, *overwrite) {
                 Ok(_) => {
                     println!(
-                        "Mnemonic generated and saved successfully to {}.",
+                        "Secret generated and saved successfully to {}.",
                         args.filename.display()
                     );
                 }
@@ -103,11 +125,11 @@ fn main() {
                 None => rpassword::prompt_password("Enter password: ").unwrap(),
             };
 
-            let decrypted_mnemonic = read_encrypted_file(&args.filename, &password);
+            let decrypted_secret = read_encrypted_file(&args.filename, &password);
 
             println!(
-                "Decrypted mnemonic: {}",
-                String::from_utf8_lossy(&decrypted_mnemonic)
+                "Decrypted secret: {}",
+                String::from_utf8_lossy(&decrypted_secret)
             );
         }
     }
