@@ -1,6 +1,6 @@
-# Mnemonic-Generate-Save (sgs) CLI
+# Secret-Generate-Save (sgs) CLI
 
-A command-line interface for generating and saving secret mnemonics.
+A command-line interface for generating and saving secret mnemonics and keys.
 
 ## Installation
 
@@ -16,7 +16,7 @@ The compiled binary will be available at `target/release/sgs`.
 
 ## Usage
 ### Generate
-Generate a new secret mnemonic and save it to a file.
+Generate a new secret mnemonic or key and save it to a file.
 ```
 ./target/release/sgs generate --filename mnemonic.enc
 ```
@@ -71,7 +71,7 @@ Decrypted secret: 15cd890528ff2ff94204f5fb4a8437ac4535603b6894c88af908565d863250
 
 ## Dependencies
 
-The Secret Mnemonic CLI relies on the following dependencies:
+The CLI relies on the following dependencies:
 
 - [clap](https://crates.io/crates/clap): A command-line argument parser for Rust.
 - [ring](https://crates.io/crates/ring): A cryptographic library for Rust.
